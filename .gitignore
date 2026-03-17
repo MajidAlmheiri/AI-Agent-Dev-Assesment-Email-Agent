@@ -1,0 +1,5 @@
+.env
+agent/__pycache__/query_agent.cpython-313.pyc
+api/__pycache__/mock_api.cpython-313.pyc
+tools/__pycache__/api_tools.cpython-313.pyc
+.env
