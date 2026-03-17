@@ -7,7 +7,7 @@ from langchain_core.prompts import ChatPromptTemplate
 # You can change how the AI model behaves by changing the system_prompt
 # The human_prompt is what the user is going to ask the agent
 system_prompt = "You are a helpful assistant that provides detailed explanations."
-human_prompt = input("")
+human_prompt = input("")#change me
 
 # API Key setup 
 os.environ["GOOGLE_API_KEY"] = "AIzaSyAS9b73JPLGNGCpAEf11r9ofb1qB3Rd_50"

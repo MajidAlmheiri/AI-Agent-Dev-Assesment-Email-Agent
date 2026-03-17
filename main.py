@@ -1,39 +1,45 @@
-import pandas as pd
-from pathlib import Path
+from agent.query_agent import agent_executor
 
-# Main function
 def main():
-    # Getting the path of the dataset
-    # This implementation should work regardless of the OS used
-    file_path = Path("data") / "FreeZone_Companies_Data.csv"
-
-    # Declaring dataframe to store the dataset csv file
-    df = pd.read_csv(file_path)
-    
-    count_freezones_by_status(df, "Jebel Ali Free Zone", "Active")
-
-# Function to be called by Agent 1
-def count_freezones_by_status(df, freezone: str, status: str, display_info: bool=False) -> int: #Maybe remove the data type constrains..?
     """
-    This method returns the number of freezones with the specified status
-    This method will be used by Agent 1
-    
-    :param df: dataframe (contains the contents of the csv file.). Always has to be included
-    :param freezone: freezone name
-    :type freezone: str
-    :param status: freezone status (active, inactive, pending_renewal)
-    :type status: str
-    :param display_info: set to true to display all the info for the companies
-    :type status: str
+    This is the main entry point for the Dubai Free Zone Research Assistant.
+    It captures user input from the terminal and passes it to Agent 1.
     """
-    
-    if (display_info == False):
-        return len(df[(df["Free Zone"] == freezone) & (df["Status"] == status)])
-    
-    else:
-        print(df[(df["Free Zone"] == freezone) & (df["Status"] == status)])
-        return len(df[(df["Free Zone"] == freezone) & (df["Status"] == status)])
+    print("===============================================")
+    print("   DUBAI FREE ZONE RESEARCH ASSISTANT (v1.0)   ")
+    print("===============================================")
+    print("Instructions:")
+    print("- Ask about company counts (e.g., 'How many active companies in JAFZA?')")
+    print("- Type 'exit' or 'quit' to close the program.")
+    print("-----------------------------------------------")
 
+    while True:
+        # 1. Capture user input
+        user_query = input("\n[User]: ")
+
+        # 2. Check if the user wants to quit
+        if user_query.lower() in ["exit", "quit", "q"]:
+            print("Exiting Assistant. Goodbye!")
+            break
+        
+        # 3. Handle empty input
+        if not user_query.strip():
+            continue
+
+        print("\n[Agent]: Thinking...")
+
+        try:
+            # 4. Invoke the agent
+            # This sends 'user_query' into the {input} placeholder in query_agent.py
+            response = agent_executor.invoke({"input": user_query})
+            
+            # 5. Display the final answer
+            print(f"\n[Agent]: {response['output']}")
+
+        except Exception as e:
+            # Catching errors like missing API keys or connection issues
+            print(f"\n[Error]: Something went wrong. Details: {e}")
+            print("Ensure your mock_api.py is running and your API key is correct.")
 
 if __name__ == "__main__":
     main()
