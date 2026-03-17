@@ -14,15 +14,15 @@ def main():
     print("-----------------------------------------------")
 
     while True:
-        # 1. Capture user input
+        # Capture user input
         user_query = input("\n[User]: ")
 
-        # 2. Check if the user wants to quit
+        # Check if the user wants to quit
         if user_query.lower() in ["exit", "quit", "q"]:
             print("Exiting Assistant. Goodbye!")
             break
         
-        # 3. Handle empty input
+        # Handle empty input
         if not user_query.strip():
             continue
 
