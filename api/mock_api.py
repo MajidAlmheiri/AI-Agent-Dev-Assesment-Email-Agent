@@ -1,25 +1,14 @@
-from fastapi import FastAPI
+import os
 import pandas as pd
-from pathlib import Path
+from fastapi import FastAPI
 
-# Create the web app
 app = FastAPI()
 
-# FastAPI will automatically turn the returned list into JSON
+# This finds the 'data' folder regardless of where you run the script from
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+CSV_PATH = os.path.join(BASE_DIR, "data", "FreeZone_Companies_Data.csv")
+
 @app.get("/companies")
 def get_all_companies():
-    
-    # Getting the path of the dataset
-    # This implementation should work regardless of the OS used
-    file_path = Path("data") / "FreeZone_Companies_Data.csv"
-
-    # Declaring dataframe to store the dataset csv file
-    df = pd.read_csv(file_path)
-    
-    # Convert the Pandas DataFrame into standard Python dictionaries
-    # orient="records" tells pandas to make a list of rows
-    data_dict = df.to_dict(orient="records")
-    
-    # Returns the data back
-    return data_dict
-    
+    df = pd.read_csv(CSV_PATH)
+    return df.to_dict(orient="records")

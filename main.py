@@ -6,7 +6,7 @@ def main():
     It captures user input from the terminal and passes it to Agent 1.
     """
     print("===============================================")
-    print("   DUBAI FREE ZONE RESEARCH ASSISTANT (v1.0)   ")
+    print("   SHARJAH FREE ZONE RESEARCH ASSISTANT (v1.0)   ")
     print("===============================================")
     print("Instructions:")
     print("- Ask about company counts (e.g., 'How many active companies in JAFZA?')")
@@ -29,11 +29,11 @@ def main():
         print("\n[Agent]: Thinking...")
 
         try:
-            # 4. Invoke the agent
+            # Invoke the agent
             # This sends 'user_query' into the {input} placeholder in query_agent.py
             response = agent_executor.invoke({"input": user_query})
             
-            # 5. Display the final answer
+            # Display the agents final response
             print(f"\n[Agent]: {response['output']}")
 
         except Exception as e:
