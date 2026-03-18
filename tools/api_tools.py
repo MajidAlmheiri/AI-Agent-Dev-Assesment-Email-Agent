@@ -3,6 +3,8 @@ import pandas as pd
 import requests
 from difflib import get_close_matches
 
+# TO-DO: A helper function could help to make filtering logic shorter since a lot of lines are basically identical...
+
 @tool
 def count_companies(freezone: str, status: str = "Active", industry: str = "") -> int:
     """
@@ -76,8 +78,6 @@ def get_setup_estimates(freezone: str, industry: str) -> dict:
     # Creating data frame
     df = pd.DataFrame(raw_data)
 
-    # TO-DO: A helper function could help to make filtering logic shorter since a lot of lines are basically identical...
-
     # Filtering Free Zone company names and industry
     requested_freezone = str(freezone).strip()
     freezone_series = df["Free Zone"].fillna("").astype(str).str.strip()
@@ -110,5 +110,38 @@ def get_setup_estimates(freezone: str, industry: str) -> dict:
         else:
             industry_filter = exact_match_filter_industry
                 
-    # 3. Calculate mean of 'Capital (AED)'
-    return {"average_capital": 500000, "fee_estimate": "25,000 AED"}
+            
+    # Perform Calculations
+    filtered_df = df[freezone_filter & industry_filter].copy()
+    
+    if filtered_df.empty:
+        return {"error": "No matching data found for this specific inquiry."}
+
+    # Ensure numbers are treated as numbers
+    filtered_df["Capital (AED)"] = pd.to_numeric(filtered_df["Capital (AED)"], errors='coerce').fillna(0)
+    filtered_df["Employees"] = pd.to_numeric(filtered_df["Employees"], errors='coerce').fillna(0)
+
+    avg_capital = filtered_df["Capital (AED)"].mean()
+    avg_employees = filtered_df["Employees"].mean()
+    
+    # Business Logic Estimates
+    license_fee = 15000 # Flat estimate for the assessment
+    visa_costs = avg_employees * 4500 # Approx cost per residency visa
+    
+    # Calculating the total base cost and the range for the agent
+    # I used a 10% margin for the range calculation
+    # The requirment didn't specify a specific margin, so I hope this is fine
+    total_base_cost = avg_capital + license_fee + visa_costs
+    min_range = total_base_cost * 0.9
+    max_range = total_base_cost * 1.1
+
+    return {
+        "matched_freezone": str(df[freezone_filter]["Free Zone"].iloc[0]),
+        "matched_industry": industry,
+        "average_capital": f"{avg_capital:,.2f} AED",
+        "average_employees": round(avg_employees),
+        "license_fee_estimate": f"{license_fee:,.2f} AED",
+        "visa_budget_estimate": f"{visa_costs:,.2f} AED",
+        "total_estimated_setup": f"{total_base_cost:,.2f} AED",
+        "setup_cost_range": f"{min_range:,.0f} - {max_range:,.0f} AED"
+    }
