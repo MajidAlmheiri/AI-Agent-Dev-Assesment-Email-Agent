@@ -27,6 +27,7 @@ def _content_to_text(content) -> str:
     if isinstance(content, list):
         return "".join(
             part.get("text", "") if isinstance(part, dict) else str(part)
+            for part in content  # <--- FIXED: Added the loop back in!
         )
     return str(content)
 
