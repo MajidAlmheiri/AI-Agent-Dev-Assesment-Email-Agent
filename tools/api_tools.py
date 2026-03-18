@@ -63,25 +63,20 @@ def count_companies(freezone: str, status: str = "Active", industry: str = "") -
     return len(filtered_companies)
 
 @tool
-def get_setup_estimates(freezone: str, industry: str) -> dict:
+def get_setup_estimates(freezone: str, industry: str, target_employees: int = 0) -> dict:
     """
     Calculates average capital and setup cost ranges for a specific freezone and industry.
-    Use this when a user asks about the costs or capital requirements for opening a company.
+    If the user specifies how many people they plan to hire, pass that number to 'target_employees'.
     """
     # Getting data from our api
     url = "http://localhost:8000/companies"
     response = requests.get(url)
-    
-    # Unpacking the data and turning it into a python dictionary
     raw_data = response.json()
-    
-    # Creating data frame
     df = pd.DataFrame(raw_data)
 
-    # Filtering Free Zone company names and industry
+    # Filtering Free Zone
     requested_freezone = str(freezone).strip()
     freezone_series = df["Free Zone"].fillna("").astype(str).str.strip()
-
     exact_match_filter_freezone = freezone_series.str.lower() == requested_freezone.lower()
     if exact_match_filter_freezone.any():
         freezone_filter = exact_match_filter_freezone
@@ -94,43 +89,40 @@ def get_setup_estimates(freezone: str, industry: str) -> dict:
         else:
             freezone_filter = exact_match_filter_freezone
      
-    # Filtering industry (Activity)       
-    requested_industry = str(industry).strip()
-    industry_series = df["Activity"].fillna("").astype(str).str.strip()
-
-    exact_match_filter_industry = industry_series.str.lower() == requested_industry.lower()
-    if exact_match_filter_industry.any():
-        industry_filter = exact_match_filter_industry
+    # Filtering industry (Keyword Search)       
+    if industry and str(industry).strip():
+        search_term = str(industry).strip()
+        industry_filter = (
+            df["Company Name"].str.contains(search_term, case=False, na=False)
+        ) | (
+            df["Activity"].str.contains(search_term, case=False, na=False)
+        )
     else:
-        known_industries = sorted(set(industry_series.tolist()))
-        close_matches = get_close_matches(requested_industry, known_industries, n=1, cutoff=0.6)
-        if close_matches:
-            matched_industry = close_matches[0]
-            industry_filter = industry_series.str.lower() == matched_industry.lower()
-        else:
-            industry_filter = exact_match_filter_industry
+        industry_filter = True
                 
-            
     # Perform Calculations
     filtered_df = df[freezone_filter & industry_filter].copy()
     
     if filtered_df.empty:
-        return {"error": "No matching data found for this specific inquiry."}
+        return {"error": f"No matching data found for the industry keyword: '{industry}'"}
 
-    # Ensure numbers are treated as numbers
     filtered_df["Capital (AED)"] = pd.to_numeric(filtered_df["Capital (AED)"], errors='coerce').fillna(0)
     filtered_df["Employees"] = pd.to_numeric(filtered_df["Employees"], errors='coerce').fillna(0)
 
     avg_capital = filtered_df["Capital (AED)"].mean()
-    avg_employees = filtered_df["Employees"].mean()
+    
+    # --- NEW LOGIC: Use user's employee count if provided, otherwise use average ---
+    if target_employees > 0:
+        calc_employees = target_employees
+        employee_note = f"Calculated based on your requested {target_employees} employees."
+    else:
+        calc_employees = filtered_df["Employees"].mean()
+        employee_note = f"Calculated based on the industry average of {round(calc_employees)} employees."
     
     # Business Logic Estimates
-    license_fee = 15000 # Flat estimate for the assessment
-    visa_costs = avg_employees * 4500 # Approx cost per residency visa
+    license_fee = 15000 
+    visa_costs = calc_employees * 4500 # 4500 AED per visa
     
-    # Calculating the total base cost and the range for the agent
-    # I used a 10% margin for the range calculation
-    # The requirment didn't specify a specific margin, so I hope this is fine
     total_base_cost = avg_capital + license_fee + visa_costs
     min_range = total_base_cost * 0.9
     max_range = total_base_cost * 1.1
@@ -139,7 +131,8 @@ def get_setup_estimates(freezone: str, industry: str) -> dict:
         "matched_freezone": str(df[freezone_filter]["Free Zone"].iloc[0]),
         "matched_industry": industry,
         "average_capital": f"{avg_capital:,.2f} AED",
-        "average_employees": round(avg_employees),
+        "employees_used_for_math": round(calc_employees),
+        "employee_note": employee_note,
         "license_fee_estimate": f"{license_fee:,.2f} AED",
         "visa_budget_estimate": f"{visa_costs:,.2f} AED",
         "total_estimated_setup": f"{total_base_cost:,.2f} AED",
