@@ -32,7 +32,7 @@ def _content_to_text(content) -> str:
 
 
 # ----------------------------
-# System prompt — the single source of agent behaviour
+# System prompt - the single source of agent behaviour
 # ----------------------------
 SYSTEM_PROMPT = SystemMessage(content="""You are a Professional Business Consultant specializing in UAE Free Zones.
 
