@@ -3,7 +3,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
-from tools.api_tools import count_companies
+from tools.api_tools import count_companies, get_setup_estimates
 
 # We keep configuration in .env so it is easy to switch keys/models
 # without touching code every time.
@@ -21,8 +21,8 @@ if not api_key:
 model_name = os.getenv("GOOGLE_MODEL", "gemini-2.5-flash")
 llm = ChatGoogleGenerativeAI(model=model_name, temperature=0)
 
-# Bind our counting tool so the model can call it when needed.
-llm_with_tools = llm.bind_tools([count_companies])
+# Bind BOTH tools so the model can choose which one to call based on user intent.
+llm_with_tools = llm.bind_tools([count_companies, get_setup_estimates])
 
 
 def _content_to_text(content) -> str:
@@ -55,13 +55,18 @@ class ResilientAgentExecutor:
         # Grab user text from main.py payload.
         user_query = inputs.get("input", "")
         
-        # Start message history with one system instruction + user question.
+        # Start message history with the Professional Email Agent Persona + user question.
         messages = [
             SystemMessage(content=(
-                "You are a professional researcher for Dubai free zones. "
-                "Use the count_companies tool for any count request. "
-                "If status is missing, assume Active. "
-                "If industry is missing, treat it as all industries."
+                "You are a professional Business Consultant for Dubai Free Zones. "
+                "Your primary task is to respond to email inquiries from potential investors. "
+                "\nINSTRUCTIONS:"
+                "\n1. Use 'get_setup_estimates' for questions about costs, capital, fees, or setup requirements."
+                "\n2. Use 'count_companies' if the user asks for market statistics or competitor counts."
+                "\n3. ALWAYS respond in a structured professional email format."
+                "\n4. Response Structure: Subject Line, Professional Greeting, Detailed Cost Breakdown "
+                "(using a list or table format), and a polite Closing."
+                "\n5. If the user query is vague (e.g. missing industry), ask for clarification politely."
             )),
             HumanMessage(content=user_query)
         ]
@@ -73,8 +78,15 @@ class ResilientAgentExecutor:
         if response.tool_calls:
             messages.append(response)
             for tool_call in response.tool_calls:
-                # Execute our local counting tool using model-provided args.
-                result = count_companies.invoke(tool_call["args"])
+                
+                # Logic to trigger the correct Python function based on the LLM's decision
+                tool_name = tool_call["name"]
+                if tool_name == "count_companies":
+                    result = count_companies.invoke(tool_call["args"])
+                elif tool_name == "get_setup_estimates":
+                    result = get_setup_estimates.invoke(tool_call["args"])
+                else:
+                    result = f"Error: Tool {tool_name} not found."
                 
                 # Attach tool output to conversation so model can finalize response.
                 messages.append(ToolMessage(
@@ -82,7 +94,7 @@ class ResilientAgentExecutor:
                     tool_call_id=tool_call["id"]
                 ))
             
-            # Second model pass: convert raw tool output into user-friendly text.
+            # Second model pass: convert raw tool output into user-friendly email text.
             response = llm_with_tools.invoke(messages)
             
         # Always return plain text (not raw structured content blocks).
@@ -91,4 +103,4 @@ class ResilientAgentExecutor:
 # Export the object that main.py imports and invokes.
 agent_executor = ResilientAgentExecutor()
 
-print("Agent is ready (Resilient Mode)...")
+print("Agent 2 (Email Inquiry) is ready...")
