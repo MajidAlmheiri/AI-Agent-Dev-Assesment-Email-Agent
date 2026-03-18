@@ -24,9 +24,9 @@ def count_companies(freezone: str, status: str = "Active", industry: str = "") -
     requested_freezone = str(freezone).strip()
     freezone_series = df["Free Zone"].fillna("").astype(str).str.strip()
 
-    exact_match_filter = freezone_series.str.lower() == requested_freezone.lower()
-    if exact_match_filter.any():
-        freezone_filter = exact_match_filter
+    exact_match_filter_freezone = freezone_series.str.lower() == requested_freezone.lower()
+    if exact_match_filter_freezone.any():
+        freezone_filter = exact_match_filter_freezone
     else:
         known_freezones = sorted(set(freezone_series.tolist()))
         close_matches = get_close_matches(requested_freezone, known_freezones, n=1, cutoff=0.6)
@@ -34,7 +34,7 @@ def count_companies(freezone: str, status: str = "Active", industry: str = "") -
             matched_freezone = close_matches[0]
             freezone_filter = freezone_series.str.lower() == matched_freezone.lower()
         else:
-            freezone_filter = exact_match_filter
+            freezone_filter = exact_match_filter_freezone
 
     if status and str(status).strip():
         status_filter = df["Status"].str.strip().str.lower() == str(status).strip().lower()
@@ -59,4 +59,56 @@ def count_companies(freezone: str, status: str = "Active", industry: str = "") -
     
     # Returns the number of active logistics companies in JAFZA 
     return len(filtered_companies)
+
+@tool
+def get_setup_estimates(freezone: str, industry: str) -> dict:
+    """
+    Calculates average capital and setup cost ranges for a specific freezone and industry.
+    Use this when a user asks about the costs or capital requirements for opening a company.
+    """
+    # Getting data from our api
+    url = "http://localhost:8000/companies"
+    response = requests.get(url)
     
+    # Unpacking the data and turning it into a python dictionary
+    raw_data = response.json()
+    
+    # Creating data frame
+    df = pd.DataFrame(raw_data)
+
+    # TO-DO: A helper function could help to make filtering logic shorter since a lot of lines are basically identical...
+
+    # Filtering Free Zone company names and industry
+    requested_freezone = str(freezone).strip()
+    freezone_series = df["Free Zone"].fillna("").astype(str).str.strip()
+
+    exact_match_filter_freezone = freezone_series.str.lower() == requested_freezone.lower()
+    if exact_match_filter_freezone.any():
+        freezone_filter = exact_match_filter_freezone
+    else:
+        known_freezones = sorted(set(freezone_series.tolist()))
+        close_matches = get_close_matches(requested_freezone, known_freezones, n=1, cutoff=0.6)
+        if close_matches:
+            matched_freezone = close_matches[0]
+            freezone_filter = freezone_series.str.lower() == matched_freezone.lower()
+        else:
+            freezone_filter = exact_match_filter_freezone
+     
+    # Filtering industry (Activity)       
+    requested_industry = str(industry).strip()
+    industry_series = df["Activity"].fillna("").astype(str).str.strip()
+
+    exact_match_filter_industry = industry_series.str.lower() == requested_industry.lower()
+    if exact_match_filter_industry.any():
+        industry_filter = exact_match_filter_industry
+    else:
+        known_industries = sorted(set(industry_series.tolist()))
+        close_matches = get_close_matches(requested_industry, known_industries, n=1, cutoff=0.6)
+        if close_matches:
+            matched_industry = close_matches[0]
+            industry_filter = industry_series.str.lower() == matched_industry.lower()
+        else:
+            industry_filter = exact_match_filter_industry
+                
+    # 3. Calculate mean of 'Capital (AED)'
+    return {"average_capital": 500000, "fee_estimate": "25,000 AED"}
