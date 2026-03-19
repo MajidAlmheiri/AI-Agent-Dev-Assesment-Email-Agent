@@ -99,8 +99,9 @@ def _build_industry_filter(df: pd.DataFrame, industry: str) -> pd.Series | bool:
 
 
 # ----------------------------
-# TOOL 1: The Counter (Agent 1)
+# TOOL 1: The Counter (From Agent 1)
 # ----------------------------
+# I thought keeping this tool is a good idea since it'll make our LLM more versatile
 @tool
 def count_companies(freezone: str, status: str = "Active", industry: str = "") -> int:
     """
