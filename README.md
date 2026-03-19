@@ -48,13 +48,29 @@ pip install -r requirements.txt
 ```
 
 ### 2. Install and start Ollama
-(Note: The commands below are for macOS. If using Windows/Linux, download Ollama directly from ollama.com)
+
+Ollama is required to run the LLM locally. Please follow the instructions for your specific operating system:
+
+**For Windows (PowerShell)**
+Open PowerShell as an Administrator and run these two commands:
+
+```bash
+# 1. Install the Ollama application
+irm https://ollama.com/install.ps1 | iex
+
+# 2. Download the required model
+ollama pull qwen2.5:7b
+```
+
+Note: After the installation finishes, you must close and restart your terminal or VS Code for the ollama command to be recognized.
+
+**For macOS (Homebrew)**
+
 ```bash
 brew install ollama
 brew services start ollama
 ollama pull qwen2.5:7b
 ```
-
 
 ### 3. Configure environment
 
