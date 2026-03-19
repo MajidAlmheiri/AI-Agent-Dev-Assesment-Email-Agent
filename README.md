@@ -134,7 +134,7 @@ It will reuse the free zone and industry from the previous turn.
 2. **User message** is appended to conversational memory.
 3. **LLM decides** whether to call a tool (`get_setup_estimates` or `count_companies`) based on intent.
 4. **Tool results** are appended back to memory as `ToolMessage`s.
-5. **LLM composes** the final professional email using the real data from the tools.
+5. **LLM composes** the final professional email using the calculated estimates from the tools.
 6. **Response** is returned to the user via the CLI.
 
 ## Smoke Test
