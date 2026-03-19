@@ -74,10 +74,17 @@ ollama pull qwen2.5:7b
 
 ### 3. Configure environment
 
+You must create a file named `.env` in the root directory of the project. Copy and paste the following configuration into that file:
+
 The `.env` file is already set up. It contains:
 
 ```
+# Ollama local model settings
 OLLAMA_MODEL=qwen2.5:7b
+
+# Data/tool settings
+COMPANIES_API_URL=http://localhost:8000/companies
+LICENSE_FEE_AED=15000
 ```
 
 ## How to Run
