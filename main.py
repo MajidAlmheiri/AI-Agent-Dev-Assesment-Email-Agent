@@ -2,7 +2,7 @@ from agent.query_agent import agent_executor
 
 def main():
     """
-    This is the main entry point for the Dubai Free Zone Research Assistant.
+    This is the main entry point for the Sharjah Free Zone Research Assistant.
     It captures user input from the terminal and passes it to Agent 1.
     """
     print("===============================================")
