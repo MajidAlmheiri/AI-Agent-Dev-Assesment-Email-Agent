@@ -5,7 +5,7 @@
 An LLM-driven agent that acts as a **Professional Business Consultant for UAE Free Zones**. When an investor sends a natural-language inquiry (e.g., _"I want to open a trading company in JAFZA — what is the estimated cost?"_), the agent:
 
 1. **Parses intent** — extracts the company type, target free zone, industry keyword, and optional employee headcount.
-2. **Queries the dataset** — calls LangChain tools against a real company dataset to calculate average license fees, capital requirements, and setup cost ranges.
+2. **Queries the dataset** — calls LangChain tools against a mock dataset of registered companies to retrieve average capital investments and employee counts, using them to calculate setup cost ranges and license fees.
 3. **Responds in professional email format** — returns a structured cost estimate with a subject line, greeting, itemized breakdown, and sign-off.
 
 All intent parsing, tool routing, and email composition are handled by the LLM — there is no hardcoded regex or template logic.
