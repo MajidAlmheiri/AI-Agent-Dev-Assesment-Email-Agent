@@ -102,7 +102,7 @@ class ResilientAgentExecutor:
         # Conversational memory: a running list of messages
         self.memory: list = [SYSTEM_PROMPT]
 
-        # Map tool names → callable tool objects for execution
+        # Map tool names - callable tool objects for execution
         self._tool_map = {t.name: t for t in TOOLS}
 
     def invoke(self, inputs: dict) -> dict:
