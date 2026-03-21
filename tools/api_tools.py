@@ -108,10 +108,10 @@ def count_companies(freezone: str, status: str = "Active", industry: str = "") -
     This method will be used to return the number of companies matching specific criteria.
     The method requires a freezone name, status, and industry.
     """
-    # 1. Load the data
+    # Load the data
     df = _load_company_dataframe()
 
-    # 2. Build the three filters
+    # Build the three filters
     freezone_filter = _build_freezone_filter(df, freezone)
 
     if status and str(status).strip():
@@ -121,10 +121,10 @@ def count_companies(freezone: str, status: str = "Active", industry: str = "") -
 
     industry_filter = _build_industry_filter(df, industry)
 
-    # 3. Apply the filters to shrink the dataset
+    # Apply the filters to shrink the dataset
     filtered_companies = df[freezone_filter & status_filter & industry_filter]
 
-    # 4. Return the final integer count to the LLM
+    # Return the final integer count to the LLM
     return len(filtered_companies)
 
 
@@ -137,7 +137,7 @@ def get_setup_estimates(freezone: str, industry: str, target_employees: int = 0)
     Calculates average capital and setup cost ranges for a specific freezone and industry.
     If the user specifies how many people they plan to hire, pass that number to 'target_employees'.
     """
-    # 1. Load and filter the data
+    # Load and filter the data
     df = _load_company_dataframe()
     freezone_filter = _build_freezone_filter(df, freezone)
     industry_filter = _build_industry_filter(df, industry)
@@ -148,14 +148,14 @@ def get_setup_estimates(freezone: str, industry: str, target_employees: int = 0)
     if filtered_df.empty:
         return {"error": f"No matching data found for the industry keyword: '{industry}'"}
 
-    # 2. Clean up numbers (Remove commas from money strings and convert to actual floats)
+    # Clean up numbers (Remove commas from money strings and convert to actual floats)
     filtered_df["Capital (AED)"] = pd.to_numeric(filtered_df["Capital (AED)"].astype(str).str.replace(",", ""), errors="coerce").fillna(0)
     filtered_df["Employees"] = pd.to_numeric(filtered_df["Employees"].astype(str).str.replace(",", ""), errors="coerce").fillna(0)
 
-    # 3. Calculate the averages from the dataset
+    # Calculate the averages from the dataset
     avg_capital = filtered_df["Capital (AED)"].mean()
 
-    # 4. Handle Employee Math (User request vs. Industry average)
+    # Handle Employee Math (User request vs. Industry average)
     if target_employees > 0:
         calc_employees = target_employees
         employee_note = f"Calculated based on your requested {target_employees} employees."
@@ -163,7 +163,7 @@ def get_setup_estimates(freezone: str, industry: str, target_employees: int = 0)
         calc_employees = filtered_df["Employees"].mean()
         employee_note = f"Calculated based on the industry average of {round(calc_employees)} employees."
 
-    # 5. Calculate Final Costs
+    # Calculate Final Costs
     avg_license_fee = DEFAULT_LICENSE_FEE_AED
     visa_costs = calc_employees * 4500 # Assume 4500 AED per visa
 
@@ -173,11 +173,11 @@ def get_setup_estimates(freezone: str, industry: str, target_employees: int = 0)
     min_range = total_base_cost * 0.9
     max_range = total_base_cost * 1.1
 
-    # 6. Extract the correctly formatted Free Zone name for the final output
+    # Extract the correctly formatted Free Zone name for the final output
     matched_freezones = df.loc[freezone_filter, "Free Zone"].dropna().astype(str).str.strip()
     matched_freezone = matched_freezones.iloc[0] if not matched_freezones.empty else str(freezone).strip()
 
-    # 7. Return the structured data dictionary to the LLM to write the email
+    # Return the structured data dictionary to the LLM to write the email
     return {
         "matched_freezone": matched_freezone,
         "matched_industry": str(industry).strip(),
