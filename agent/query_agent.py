@@ -3,13 +3,13 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from langchain_ollama import ChatOllama
-from langchain_core.messages import SystemMessage, HumanMessage, AIMessage, ToolMessage
+from langchain_core.messages import SystemMessage, HumanMessage, ToolMessage
 
 from tools.api_tools import count_companies, get_setup_estimates
 
 
 # ----------------------------
-# Environment / configuration
+# Environment Configuration
 # ----------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
 dotenv_path = BASE_DIR / ".env"
@@ -18,22 +18,22 @@ if dotenv_path.exists():
 
 
 # ----------------------------
-# Helper: safely extract text from an AIMessage
+# Helper: Safely Extract Text 
 # ----------------------------
 def _content_to_text(content) -> str:
-    """Convert AIMessage.content (str or list of dicts) to plain text."""
+    """Convert content (str or list of dicts) to plain text."""
     if isinstance(content, str):
         return content
     if isinstance(content, list):
         return "".join(
             part.get("text", "") if isinstance(part, dict) else str(part)
-            for part in content  # <--- FIXED: Added the loop back in!
+            for part in content  
         )
     return str(content)
 
 
 # ----------------------------
-# System prompt - the single source of agent behaviour
+# System prompt (source of agent behaviour)
 # ----------------------------
 SYSTEM_PROMPT = SystemMessage(content="""You are a Professional Business Consultant specializing in UAE Free Zones.
 
@@ -116,14 +116,14 @@ class ResilientAgentExecutor:
         """
         query = inputs.get("input", "")
 
-        # Step 1 — add the user's message to conversation history
+        # Add the user's message to conversation history
         self.memory.append(HumanMessage(content=query))
 
-        # Step 2 — call the LLM (may return tool_calls or a direct answer)
+        # Initial LLM pass (determines if tools are needed)
         ai_response = self.llm.invoke(self.memory)
         self.memory.append(ai_response)
 
-        # Step 3 — tool-calling loop: keep going while the LLM asks for tools
+        # Execute requested tools and feed results back to the LLM
         while ai_response.tool_calls:
             # Execute every tool the LLM requested
             for tool_call in ai_response.tool_calls:
@@ -150,7 +150,7 @@ class ResilientAgentExecutor:
             ai_response = self.llm.invoke(self.memory)
             self.memory.append(ai_response)
 
-        # Step 4 — extract the final text and return
+        # Extract the final text and return
         output = _content_to_text(ai_response.content)
         return {"output": output}
 
