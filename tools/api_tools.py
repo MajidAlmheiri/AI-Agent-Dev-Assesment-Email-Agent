@@ -87,7 +87,6 @@ def _build_industry_filter(df: pd.DataFrame, industry: str) -> pd.Series | bool:
     """
     if industry and str(industry).strip():
         search_term = str(industry).strip()
-        # The | symbol acts as an "OR". Keep the row if the keyword is in the Name OR the Activity.
         return (
             df["Company Name"].fillna("").astype(str).str.contains(search_term, case=False, na=False)
         ) | (
@@ -121,7 +120,7 @@ def count_companies(freezone: str, status: str = "Active", industry: str = "") -
 
     industry_filter = _build_industry_filter(df, industry)
 
-    # Apply the filters to shrink the dataset
+    # Apply the filters 
     filtered_companies = df[freezone_filter & status_filter & industry_filter]
 
     # Return the final integer count to the LLM
