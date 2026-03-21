@@ -3,7 +3,7 @@ from agent.query_agent import agent_executor
 def main():
     """
     This is the main entry point for the Sharjah Free Zone Research Assistant.
-    It captures user input from the terminal and passes it to Agent 1
+    It captures user input from the terminal and passes it to the email Agent (Agent 2)
     """
     print("===============================================")
     print("   SHARJAH FREE ZONE RESEARCH ASSISTANT (v1.0)   ")
