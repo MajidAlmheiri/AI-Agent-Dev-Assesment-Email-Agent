@@ -9,7 +9,7 @@ def main():
     print("   SHARJAH FREE ZONE RESEARCH ASSISTANT (v1.0)   ")
     print("===============================================")
     print("Instructions:")
-    print("- Ask about company counts (e.g., 'How many active companies in JAFZA?')")
+    print("- Ask about counts or costs (e.g., 'How many active companies in JAFZA?' or 'What are the setup costs for a trading firm?')")
     print("- Type 'exit' or 'quit' to close the program.")
     print("-----------------------------------------------")
 
